@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django_filters',
     # local
     'cms',
+    'home',
 ]
 
 MIDDLEWARE = [

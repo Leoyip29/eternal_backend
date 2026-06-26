@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from core.fields import TranslatedField
 
 
 class SiteSettings(models.Model):
@@ -10,7 +11,7 @@ class SiteSettings(models.Model):
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
     whatsapp_number = models.CharField(max_length=30, blank=True)
-    copyright_text = models.CharField(max_length=255, blank=True)
+    copyright_text = TranslatedField()
 
     class Meta:
         verbose_name = "Site Settings"
@@ -51,7 +52,7 @@ class SocialLink(models.Model):
 
 
 class FooterColumn(models.Model):
-    title = models.CharField(max_length=100)
+    title = TranslatedField()
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -60,12 +61,13 @@ class FooterColumn(models.Model):
         verbose_name_plural = "Footer Columns"
 
     def __str__(self):
-        return self.title
+        t = self.title
+        return t.get("en", "") if isinstance(t, dict) else str(t)
 
 
 class FooterLink(models.Model):
     column = models.ForeignKey(FooterColumn, on_delete=models.CASCADE, related_name="links")
-    label = models.CharField(max_length=100)
+    label = TranslatedField()
     url = models.CharField(max_length=255)
     order = models.PositiveSmallIntegerField(default=0)
     open_in_new_tab = models.BooleanField(default=False)
@@ -76,13 +78,17 @@ class FooterLink(models.Model):
         verbose_name_plural = "Footer Links"
 
     def __str__(self):
-        return f"{self.column.title} — {self.label}"
+        lbl = self.label
+        col = self.column.title
+        lbl_en = lbl.get("en", "") if isinstance(lbl, dict) else str(lbl)
+        col_en = col.get("en", "") if isinstance(col, dict) else str(col)
+        return f"{col_en} — {lbl_en}"
 
 
 class NewsletterSection(models.Model):
-    headline = models.CharField(max_length=200, default="Join Our Newsletter")
-    subtext = models.TextField(blank=True)
-    button_label = models.CharField(max_length=50, default="Subscribe")
+    headline = TranslatedField()
+    subtext = TranslatedField(long_text=True)
+    button_label = TranslatedField()
     background_image = models.ImageField(upload_to="cms/newsletter/", blank=True, null=True)
 
     class Meta:
@@ -94,4 +100,5 @@ class NewsletterSection(models.Model):
             raise ValidationError("Only one Newsletter Section instance is allowed.")
 
     def __str__(self):
-        return self.headline
+        h = self.headline
+        return h.get("en", "") if isinstance(h, dict) else str(h)
