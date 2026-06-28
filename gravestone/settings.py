@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     # local
     'cms',
     'home',
+    'catalogue',
+    'portfolio',
 ]
 
 MIDDLEWARE = [
