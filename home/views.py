@@ -1,3 +1,6 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
+from django.views.decorators.vary import vary_on_headers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import (
@@ -14,6 +17,15 @@ from .serializers import (
 )
 
 
+# Landing-page content is CMS-driven and changes rarely, so it's safe to let
+# browsers and CDNs cache it. Vary on Accept-Language because the response is
+# translated per-request (see core.serializers.TranslatedCharField); the ?lang=
+# query param is already part of the URL and therefore part of the cache key.
+HOMEPAGE_CACHE_MAX_AGE = 60 * 15  # 15 minutes
+
+
+@method_decorator(cache_control(public=True, max_age=HOMEPAGE_CACHE_MAX_AGE), name="get")
+@method_decorator(vary_on_headers("Accept-Language"), name="get")
 class HomePageView(APIView):
     """Single endpoint that returns the full homepage content in one call."""
 
